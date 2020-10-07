@@ -87,11 +87,18 @@ app.layout = html.Div(
              dbc.Input(id="input", placeholder='Insert ticker on Euronext', type='text'),
              html.Br(),
              html.P(id="output"),
+             html.B(),
+             html.P(id="output2")
          ]
      ),
-     html.Div(id='linegraph-container',),
+     html.Div([(
+         dbc.Card(
+            dbc.CardBody(id='linegraph-container')))]),
      html.Br(),
-     html.Div(id='candlestick-container')
+     html.Div([(
+         dbc.Card(
+            dbc.CardBody(id='candlestick-container')))]),
+
      ]
 )
 
@@ -100,34 +107,59 @@ app.layout = html.Div(
 @app.callback(Output('output', 'children'), [Input('input', 'value')])
 
 def get_company_name(value):
-    response = requests.get('https://www.quandl.com/api/v3/datasets/EURONEXT/{}.json?api_key=1eCS2saTbHTFds2LjKkX'.format(value))
-    dataset = response.json()
-    company_name = dataset['dataset']['name']
-    return company_name
+    if value is not None:
+        response = requests.get('https://www.quandl.com/api/v3/datasets/EURONEXT/{}.json?api_key=1eCS2saTbHTFds2LjKkX'.format(value))
+        dataset = response.json()
+        company_name = dataset['dataset']['name']
+        return company_name
 
+@app.callback(Output('output2', 'children'), [Input('input', 'value')])
+
+def get_latest_close(value):
+    if value is not None:
+        response = requests.get('https://www.quandl.com/api/v3/datasets/EURONEXT/{}.json?api_key=1eCS2saTbHTFds2LjKkX'.format(value))
+        dataset = response.json()
+        latest_close = dataset['dataset']['data'][0][4]
+        return 'The latest close is: ' + str(latest_close)
 
 @app.callback(
     [Output(component_id='linegraph-container', component_property='children'),
     Output(component_id='candlestick-container', component_property='children')],
     [Input(component_id='input', component_property='value')])
 
-def get_ohlc_df(value):
-    response = requests.get('https://www.quandl.com/api/v3/datasets/EURONEXT/{}.json?api_key=1eCS2saTbHTFds2LjKkX'.format(value))
-    json_file = response.json()
-    data = json_file['dataset']['data']
-    df = pd.DataFrame(data, columns=['date', 'open', 'high', 'low', 'close', 'volume', 'turnover'])
-    df = df[::-1]
 
-    fig = px.line(df['close'], title='Stock price evolution')
-    fig2 = go.Figure(data=[go.Candlestick(x=df['date'],
-                open=df['open'],
-                high=df['high'],
-                low=df['low'],
-                close=df['close'])])
-    return dcc.Graph(id='linegraph-container',
-                figure=fig
-                ),dcc.Graph(id='candlestick-container',
-                figure=fig2)
+def get_ohlc_df(value):
+    if value is not None:
+        response = requests.get('https://www.quandl.com/api/v3/datasets/EURONEXT/{}.json?api_key=1eCS2saTbHTFds2LjKkX'.format(value))
+        json_file = response.json()
+        data = json_file['dataset']['data']
+        df = pd.DataFrame(data, columns=['date', 'open', 'high', 'low', 'close', 'volume', 'turnover'])
+        df = df[::-1]
+
+        fig = px.line(df,x= df['date'],y=df['close'],
+                      title='Stock price evolution',
+                    )
+        fig.layout.update(
+            template='plotly_dark',
+            title_x=0.5,
+        ),
+        fig.update_traces(line_color='#456987')
+        
+        fig2 = go.Figure(data=[go.Candlestick(x=df['date'],
+                    open=df['open'],
+                    high=df['high'],
+                    low=df['low'],
+                    close=df['close'])])
+        fig2.layout.update(
+            template='plotly_dark'
+        )
+        return dcc.Graph(id='linegraph-container',
+                    figure=fig
+                    ),dcc.Graph(id='candlestick-container',
+                    figure=fig2)
+    else:
+        return '',''
+
 
 
 #################################################################
