@@ -11,7 +11,8 @@ import plotly.express as px
 
 from dash.dependencies import Input, Output, State
 
-app = dash.Dash(external_stylesheets=[dbc.themes.DARKLY])
+# Light theme: LUX, dark theme: DARKLY (enable darktheme in navbar)
+app = dash.Dash(external_stylesheets=[dbc.themes.LUX])
 ##############################################################
 
 
@@ -49,19 +50,17 @@ dropdown = dbc.Col(
 
 ## Navigation Bar layout
 navbar = dbc.Navbar(
-    # dbc.Container(      # A container keeps the content of the rows and columns into one single blob that can be moved
+    dbc.Container(      # A container keeps the content of the rows and columns into one single blob that can be moved
         [
-            html.A(
-                # Use row and col to control vertical alignment of logo
-                dbc.Row(
-                    [dbc.Col((html.Img(src='https://prismic-io.s3.amazonaws.com/plotly-marketing-website/bd1f702a-b623-48ab-a459-3ee92a7499b4_logo-plotly.svg',height='30px')), width='auto'),
-                    dbc.Col((dbc.NavbarBrand('Finance Dashboard')), width='auto')],
-                    align='center',
-                    no_gutters=True,
-                ),
+            # Use row and col to control vertical alignment of logo
+            dbc.Row(
+                [dbc.Col((html.Img(src='https://prismic-io.s3.amazonaws.com/plotly-marketing-website/bd1f702a-b623-48ab-a459-3ee92a7499b4_logo-plotly.svg',height='30px')), width='auto'),
+                dbc.Col((dbc.NavbarBrand('Finance Dashboard')), width='auto')],
+                align='center',
+                no_gutters=True,
             ),
-            dbc.NavbarToggler(id='navbar-toggler2'),
-            dbc.Collapse(
+            dbc.Row(dbc.Col(dbc.NavbarToggler(id='navbar-toggler2'))),
+            dbc.Row(dbc.Col(dbc.Collapse(
                 dbc.Nav(
                         dbc.Col(
                             [nav_item,
@@ -70,38 +69,35 @@ navbar = dbc.Navbar(
                 ),
                 id='navbar-collapse2',
                 navbar=True,
-           ),
+           ),))
         ],
-    # ),
-color='dark',
-dark=True,
-className='mb-5',)
-
-#########################################
+    ),
+    # color='dark',
+    # dark=True,
+    className='mb-5', )
+###################################################################################################################
 app.layout = html.Div(
-    [navbar,
-     html.H2('Financial Dashboard for Euronext Stock Exchange', style={'text-align':'center'}),
+    dbc.Container(
+    [
+        dbc.Row(dbc.Col(navbar)),
+        dbc.Row(dbc.Col(html.H2('Financial Dashboard for Euronext Stock Exchange', style={'text-align':'center'}))),
 
-     html.Div(
-         [
-             dbc.Input(id="input", placeholder='Insert ticker on Euronext', type='text'),
-             html.Br(),
-             html.P(id="output"),
-             html.B(),
-             html.P(id="output2")
-         ]
-     ),
-     html.Div([(
-         dbc.Card(
-            dbc.CardBody(id='linegraph-container')))]),
-     html.Br(),
-     html.Div([(
-         dbc.Card(
-            dbc.CardBody(id='candlestick-container')))]),
+        dbc.Row(
+            [
+             dbc.Col(html.Div(dbc.Input(id="input", placeholder='Insert ticker on Euronext', type='text'))),
+             dbc.Col(html.Div(id='output3')),
+             dbc.Col(html.Div(id='output')),
+             dbc.Col(html.Div(id='output2')),
 
-     ]
+            ]
+    ),
+        dbc.Row(dbc.Col(dbc.Card(dbc.CardBody(id='linegraph-container')))),
+    html.Br(),
+         dbc.Row(dbc.Col(dbc.Card(dbc.CardBody(id='candlestick-container')))),
+
+    ]
+    )
 )
-
 ###############################################################
 # !Figure out how to combine multiple outputs so that i can get a linegraph and candlestick chart under input box
 @app.callback(Output('output', 'children'), [Input('input', 'value')])
@@ -122,6 +118,16 @@ def get_latest_close(value):
         latest_close = dataset['dataset']['data'][0][4]
         return 'The latest close is: ' + str(latest_close)
 
+@app.callback(Output('output3', 'children'), [Input('input', 'value')])
+def get_market(value):
+    if value is not None:
+        response = requests.get('https://www.quandl.com/api/v3/datasets/EURONEXT/{}.json?api_key=1eCS2saTbHTFds2LjKkX'.format(value))
+        data = response.json()
+        dataset = data['dataset']['description']
+        split_dataset = dataset.split("<br>")
+        market = split_dataset[2]
+        return market
+
 @app.callback(
     [Output(component_id='linegraph-container', component_property='children'),
     Output(component_id='candlestick-container', component_property='children')],
@@ -140,18 +146,18 @@ def get_ohlc_df(value):
                       title='Stock price evolution',
                     )
         fig.layout.update(
-            template='plotly_dark',
+            template='ggplot2',
             title_x=0.5,
         ),
         fig.update_traces(line_color='#456987')
-        
+
         fig2 = go.Figure(data=[go.Candlestick(x=df['date'],
                     open=df['open'],
                     high=df['high'],
                     low=df['low'],
                     close=df['close'])])
         fig2.layout.update(
-            template='plotly_dark'
+            template='ggplot2'
         )
         return dcc.Graph(id='linegraph-container',
                     figure=fig
@@ -165,3 +171,4 @@ def get_ohlc_df(value):
 #################################################################
 if __name__ == '__main__':
     app.run_server(debug=True, port=8000,)
+
