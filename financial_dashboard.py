@@ -104,7 +104,7 @@ app.layout = html.Div(
 
 def get_company_name(value):
     if value is not None:
-        response = requests.get('https://www.quandl.com/api/v3/datasets/EURONEXT/{}.json?api_key=1eCS2saTbHTFds2LjKkX'.format(value))
+        response = requests.get('https://www.quandl.com/api/v3/datasets/EURONEXT/{}.json?api_key={}'.format(value))
         dataset = response.json()
         company_name = dataset['dataset']['name']
         return company_name
@@ -113,7 +113,7 @@ def get_company_name(value):
 
 def get_latest_close(value):
     if value is not None:
-        response = requests.get('https://www.quandl.com/api/v3/datasets/EURONEXT/{}.json?api_key=1eCS2saTbHTFds2LjKkX'.format(value))
+        response = requests.get('https://www.quandl.com/api/v3/datasets/EURONEXT/{}.json?api_key={}'.format(value))
         dataset = response.json()
         latest_close = dataset['dataset']['data'][0][4]
         return 'The latest close is: ' + str(latest_close)
@@ -121,7 +121,7 @@ def get_latest_close(value):
 @app.callback(Output('output3', 'children'), [Input('input', 'value')])
 def get_market(value):
     if value is not None:
-        response = requests.get('https://www.quandl.com/api/v3/datasets/EURONEXT/{}.json?api_key=1eCS2saTbHTFds2LjKkX'.format(value))
+        response = requests.get('https://www.quandl.com/api/v3/datasets/EURONEXT/{}.json?api_key={}'.format(value))
         data = response.json()
         dataset = data['dataset']['description']
         split_dataset = dataset.split("<br>")
@@ -136,7 +136,7 @@ def get_market(value):
 
 def get_ohlc_df(value):
     if value is not None:
-        response = requests.get('https://www.quandl.com/api/v3/datasets/EURONEXT/{}.json?api_key=1eCS2saTbHTFds2LjKkX'.format(value))
+        response = requests.get('https://www.quandl.com/api/v3/datasets/EURONEXT/{}.json?api_key={}'.format(value))
         json_file = response.json()
         data = json_file['dataset']['data']
         df = pd.DataFrame(data, columns=['date', 'open', 'high', 'low', 'close', 'volume', 'turnover'])
