@@ -1,7 +1,7 @@
-import dash
 import dash_core_components as dcc
 import dash_bootstrap_components as dbc
 import dash_html_components as html
+
 
 # Light theme: LUX, dark theme: DARKLY (enable darktheme in navbar)
 # app = dash.Dash(external_stylesheets=[dbc.themes.LUX])
@@ -72,7 +72,9 @@ navbar = dbc.Navbar(
     className='mb-5', )
 
 ###################################################################################################################
-body1 = html.Div(
+
+
+body1 = html.Div([
     dbc.Container(
         [
             dbc.Row(dbc.Col(navbar)),
@@ -81,15 +83,14 @@ body1 = html.Div(
 
             dbc.Row(
                 [
-                    dbc.Col(html.Div(dbc.Input(id="input", placeholder='Insert ticker on Euronext', type='text'))),
-                    dbc.Col(html.Div(id='output3')),
-                    dbc.Col(html.Div(id='output')),
-                    dbc.Col(html.Div(id='output2')),
+                    dbc.Col(html.Div(dbc.Input(id="input", value='ABI', debounce=True))),
+                    dbc.Col(html.Div(id='output', style={'text-align': 'center'})),
+                    dbc.Col(html.Div(id='output2', style={'text-align': 'center'})),
+                    dbc.Col(html.Div(id='output3', style={'text-align': 'center'})),
 
                 ]
             ),
-            dbc.Row(dbc.Col(dbc.Card(dcc.Graph(id='linegraph-container-enx', figure={})))),
-#             dbc.Row(dbc.Col(dbc.Card(dbc.CardBody(id='linegraph-container-enx')))),
+                dbc.Row([dbc.Col(dcc.Graph(id='linegraph-container-enx', figure={}))])
         ]
-    )
+    )]
 )
