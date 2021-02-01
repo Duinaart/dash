@@ -13,7 +13,6 @@ import requests
 from bs4 import BeautifulSoup as bs
 import yahoo_fin.stock_info as si
 
-
 from euronext import body1
 from sp500 import body2
 
@@ -65,85 +64,47 @@ def get_market(value):
         split_dataset = dataset.split("<br>")
         market = split_dataset[2]
         return market
-    
+
+
 @app.callback(
     Output('linegraph-container-enx', 'figure'),
     [Input('input', 'value')])
 def update_graph(value):
-    if value is not None:
-        response = requests.get(
-            'https://www.quandl.com/api/v3/datasets/EURONEXT/{}.json?api_key=1eCS2saTbHTFds2LjKkX'.format(value))
-        json_file = response.json()
-        data = json_file['dataset']['data']
-        df = pd.DataFrame(data, columns=['date', 'open', 'high', 'low', 'close', 'volume', 'turnover'])
-        df = df[::-1]
+    response = requests.get(
+        'https://www.quandl.com/api/v3/datasets/EURONEXT/{}.json?api_key=1eCS2saTbHTFds2LjKkX'.format(value))
+    json_file = response.json()
+    data = json_file['dataset']['data']
+    df = pd.DataFrame(data, columns=['date', 'open', 'high', 'low', 'close', 'volume', 'turnover'])
+    df = df[::-1]
 
-        fig = make_subplots(rows=2, cols=1, shared_xaxes=True)
+    fig = make_subplots(rows=2, cols=1, shared_xaxes=True)
 
-        # Make the subplots (way to have hover on both subplots simultaneously is not added yet)
-        fig.add_trace(go.Scatter(x=df['date'], y=df['close'],
-                                 hovertemplate='Price: € %{y}' +
-                                               '<extra></extra>',
-                                 mode='lines', line=dict(color='#456987')), row=1, col=1)
-        fig.add_trace(go.Bar(x=df['date'], y=df['volume'],
-                             hovertemplate='Volume: %{y}' +
-                                           '<extra></extra>', marker_color='#184a1a'), row=2, col=1)
+    # Make the subplots (way to have hover on both subplots simultaneously is not added yet)
+    fig.add_trace(go.Scatter(x=df['date'], y=df['close'],
+                             hovertemplate='Price: € %{y}' +
+                                           '<extra></extra>',
+                             mode='lines', line=dict(color='#456987')), row=1, col=1)
+    fig.add_trace(go.Bar(x=df['date'], y=df['volume'],
+                         hovertemplate='Volume: %{y}' +
+                                       '<extra></extra>', marker_color='#184a1a'), row=2, col=1)
 
-        # Add the layout to the subplots
-        fig.layout.update(
-            title='Stock price evolution',
-            showlegend=False,
-            template='simple_white',
-            title_x=0.5,
-            xaxis_showgrid=False,
-            yaxis_showgrid=False,
-            hovermode='x unified',  # Displays date on the x-axis in full
-        )
+    # Add the layout to the subplots
+    fig.layout.update(
+        title='Stock price evolution',
+        showlegend=False,
+        template='simple_white',
+        title_x=0.5,
+        xaxis_showgrid=False,
+        yaxis_showgrid=False,
+        hovermode='x unified',  # Displays date on the x-axis in full
+    )
 
-        # Add labels to subplots
-        fig['layout']['yaxis']['title'] = 'Price'
-        fig['layout']['yaxis2']['title'] = 'Volume'
-        # fig.show(config={"displayModeBar": False})
-        return fig
+    # Add labels to subplots
+    fig['layout']['yaxis']['title'] = 'Price'
+    fig['layout']['yaxis2']['title'] = 'Volume'
+    return fig
 
-    else:
-        return ''
 
-# @app.callback(
-#     Output(component_id='linegraph-container-enx', component_property='children'),
-#     [Input(component_id='input', component_property='value')])
-# def get_ohlc_df(value):
-#     if value is not None:
-#         response = requests.get(
-#             'https://www.quandl.com/api/v3/datasets/EURONEXT/{}.json?api_key=1eCS2saTbHTFds2LjKkX'.format(value))
-#         json_file = response.json()
-#         data = json_file['dataset']['data']
-#         df = pd.DataFrame(data, columns=['date', 'open', 'high', 'low', 'close', 'volume', 'turnover'])
-#         df = df[::-1]
-
-#         fig = make_subplots(rows=2, cols=1, shared_xaxes=True, )
-
-#         # Make the subplots
-#         fig.add_trace(go.Scatter(x=df['date'], y=df['close'], mode='lines', line=dict(color='#456987')), row=1, col=1)
-#         fig.add_trace(go.Bar(x=df['date'], y=df['volume'],marker_color='#184a1a'), row=2, col=1)
-
-#         # Add the layout to the subplots
-#         fig.layout.update(
-#             title='Stock price evolution',
-#             showlegend=False,
-#             template='simple_white',
-#             title_x=0.5,
-#             xaxis_showgrid=False,
-#             yaxis_showgrid=False
-#         ),
-
-#         # Add labels to subplots
-#         fig['layout']['yaxis']['title'] = 'Price'
-#         fig['layout']['yaxis2']['title'] = 'Volume'
-#         # fig.show(config={"displayModeBar": False})
-#         return dcc.Graph(id='linegraph-container-enx', figure=fig, config={'displayModeBar': False})
-#     else:
-#         return '', ''
 
 
 #########################################################################################################
@@ -154,7 +115,7 @@ def update_graph(value):
 def full_company_name_sp(value):
     if value is not None:
         r = requests.get('https://finance.yahoo.com/quote/{}/'.format(value))
-        webpage = bs(r.content)
+        webpage = bs(r.content, features='lxml')
         title = str(webpage.find('title'))
         title = title[7:]
         split_title = title.split('(')
@@ -162,6 +123,7 @@ def full_company_name_sp(value):
         return full_name
     else:
         return ''
+
 
 @app.callback(Output('outputsp', 'children'), [Input('inputsp', 'value')])
 def get_latest_close_sp(value):
@@ -174,46 +136,43 @@ def get_latest_close_sp(value):
     else:
         return ''
 
+
 @app.callback(
-    Output(component_id='linegraph-container-sp', component_property='children'),
+    Output(component_id='linegraph-container-sp', component_property='figure'),
     [Input(component_id='inputsp', component_property='value')])
-def get_sp_data(value):
-    if value is not None:
-        data = si.get_data(value, start_date='02/01/2017', index_as_date=True, interval='1d')
-        df = pd.DataFrame(data)
+def update_graph(value):
+    data = si.get_data(value, start_date='02/01/2017', index_as_date=True, interval='1d')
+    df = pd.DataFrame(data)
+    df.reset_index(inplace=True)  # make date-index full column and rename it
+    df.rename(columns={'index': 'date'}, inplace=True)
 
-        fig2 = px.line(df, y=df['close'],
-                       title='Stock price evolution', labels={'index':'', 'adjclose':'Price'}
-                       )
-        fig2.layout.update(
-            title='Stock price evolution',
-            showlegend=False,
-            template='simple_white',
-            title_x=0.5,
-            xaxis_showgrid=False,
-            yaxis_showgrid=False
-        ),
-        fig2.update_xaxes(
-            rangeslider_visible=True,
-            rangeselector=dict(
-                buttons=list([
-                    dict(count=1, label="1m", step="month", stepmode="backward"),
-                    dict(count=6, label="6m", step="month", stepmode="backward"),
-                    dict(count=1, label="YTD", step="year", stepmode="todate"),
-                    dict(count=1, label="1y", step="year", stepmode="backward"),
-                    dict(step="all")
-                ])
-            )
-        )
-        # Change color of the line
-        fig2.update_traces(line_color='#456987')
+    fig2 = make_subplots(rows=2, cols=1, shared_xaxes=True, )
 
-        fig2['layout']['yaxis']['title'] = 'Price'
+    # Make the subplots (way to have hover on both subplots simultaneously is not added yet)
+    fig2.add_trace(go.Scatter(x=df['date'], y=df['close'],
+                              hovertemplate='Price: € %{y}' +
+                                            '<extra></extra>',
+                              mode='lines', line=dict(color='#456987')), row=1, col=1)
+    fig2.add_trace(go.Bar(x=df['date'], y=df['volume'],
+                          hovertemplate='Volume: %{y}' +
+                                        '<extra></extra>', marker=dict(color='#184a1a')), row=2, col=1)
 
+    # Add the layout to the subplots
+    fig2.layout.update(
+        title='Stock price evolution',
+        showlegend=False,
+        template='simple_white',
+        title_x=0.5,
+        xaxis_showgrid=False,
+        yaxis_showgrid=False,
+        hovermode='x unified',  # Displays date on the x-axis in full
+    )
 
-        return dcc.Graph(id='linegraph-container-sp', figure=fig2, config={'displayModeBar': False})
-    else:
-        return '', ''
+    # Add labels to subplots
+    fig2['layout']['yaxis']['title'] = 'Price'
+    fig2['layout']['yaxis2']['title'] = 'Volume'
+
+    return fig2
 
 
 #########################################################################################################
