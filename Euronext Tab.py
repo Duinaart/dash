@@ -87,7 +87,8 @@ body1 = html.Div(
 
                 ]
             ),
-            dbc.Row(dbc.Col(dbc.Card(dbc.CardBody(id='linegraph-container-enx')))),
+            dbc.Row(dbc.Col(dbc.Card(dcc.Graph(id='linegraph-container-enx', figure={})))),
+#             dbc.Row(dbc.Col(dbc.Card(dbc.CardBody(id='linegraph-container-enx')))),
         ]
     )
 )
