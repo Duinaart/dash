@@ -8,9 +8,11 @@ First some info aobut my file setup: it is a two-tab dashboard that is split int
   - financial dashboard: callbacks of both tabs
  
 Everything works fine on load and the first stock chosen. However, when I choose another ticker, my DataFrame on which my graph is based updates 
-as can be seen by the two other callbacks that change but my graph remains unchanged. I tried to solve this problem by reconfiguring my Euronext tab and callbacks 
-to mimic the setup seen in your github repositories: 
-https://github.com/Coding-with-Adam/Dash-by-Plotly/blob/master/Bootstrap/bootstrap_card.py and https://github.com/Coding-with-Adam/Dash-by-Plotly/blob/master/Bootstrap/Complete_Guide/live_bootstrap.py
+as can be seen by the two other callbacks that change but my graph remains unchanged. I tried to solve this problem by reconfiguring my Euronext tab (final line) and callbacks (Fourth and final callback in Euronext part) to mimic the setup seen in your github repositories: 
+
+https://github.com/Coding-with-Adam/Dash-by-Plotly/blob/master/Bootstrap/bootstrap_card.py and 
+https://github.com/Coding-with-Adam/Dash-by-Plotly/blob/master/Bootstrap/Complete_Guide/live_bootstrap.py
+
 however, i get an Error saying:
   Invalid argument `figure` passed into Graph with ID "linegraph-container-enx".
   Expected `object`.
