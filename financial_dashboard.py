@@ -65,12 +65,11 @@ def get_market(value):
         split_dataset = dataset.split("<br>")
         market = split_dataset[2]
         return market
-
-
+    
 @app.callback(
-    Output(component_id='linegraph-container-enx', component_property='children'),
-    [Input(component_id='input', component_property='value')])
-def get_ohlc_df(value):
+    Output('linegraph-container-enx', 'figure'),
+    [Input('input', 'value')])
+def update_graph(value):
     if value is not None:
         response = requests.get(
             'https://www.quandl.com/api/v3/datasets/EURONEXT/{}.json?api_key=1eCS2saTbHTFds2LjKkX'.format(value))
@@ -79,11 +78,16 @@ def get_ohlc_df(value):
         df = pd.DataFrame(data, columns=['date', 'open', 'high', 'low', 'close', 'volume', 'turnover'])
         df = df[::-1]
 
-        fig = make_subplots(rows=2, cols=1, shared_xaxes=True, )
+        fig = make_subplots(rows=2, cols=1, shared_xaxes=True)
 
-        # Make the subplots
-        fig.add_trace(go.Scatter(x=df['date'], y=df['close'], mode='lines', line=dict(color='#456987')), row=1, col=1)
-        fig.add_trace(go.Bar(x=df['date'], y=df['volume'],marker_color='#184a1a'), row=2, col=1)
+        # Make the subplots (way to have hover on both subplots simultaneously is not added yet)
+        fig.add_trace(go.Scatter(x=df['date'], y=df['close'],
+                                 hovertemplate='Price: € %{y}' +
+                                               '<extra></extra>',
+                                 mode='lines', line=dict(color='#456987')), row=1, col=1)
+        fig.add_trace(go.Bar(x=df['date'], y=df['volume'],
+                             hovertemplate='Volume: %{y}' +
+                                           '<extra></extra>', marker_color='#184a1a'), row=2, col=1)
 
         # Add the layout to the subplots
         fig.layout.update(
@@ -92,16 +96,54 @@ def get_ohlc_df(value):
             template='simple_white',
             title_x=0.5,
             xaxis_showgrid=False,
-            yaxis_showgrid=False
-        ),
+            yaxis_showgrid=False,
+            hovermode='x unified',  # Displays date on the x-axis in full
+        )
 
         # Add labels to subplots
         fig['layout']['yaxis']['title'] = 'Price'
         fig['layout']['yaxis2']['title'] = 'Volume'
         # fig.show(config={"displayModeBar": False})
-        return dcc.Graph(id='linegraph-container-enx', figure=fig, config={'displayModeBar': False})
+        return fig
+
     else:
-        return '', ''
+        return ''
+
+# @app.callback(
+#     Output(component_id='linegraph-container-enx', component_property='children'),
+#     [Input(component_id='input', component_property='value')])
+# def get_ohlc_df(value):
+#     if value is not None:
+#         response = requests.get(
+#             'https://www.quandl.com/api/v3/datasets/EURONEXT/{}.json?api_key=1eCS2saTbHTFds2LjKkX'.format(value))
+#         json_file = response.json()
+#         data = json_file['dataset']['data']
+#         df = pd.DataFrame(data, columns=['date', 'open', 'high', 'low', 'close', 'volume', 'turnover'])
+#         df = df[::-1]
+
+#         fig = make_subplots(rows=2, cols=1, shared_xaxes=True, )
+
+#         # Make the subplots
+#         fig.add_trace(go.Scatter(x=df['date'], y=df['close'], mode='lines', line=dict(color='#456987')), row=1, col=1)
+#         fig.add_trace(go.Bar(x=df['date'], y=df['volume'],marker_color='#184a1a'), row=2, col=1)
+
+#         # Add the layout to the subplots
+#         fig.layout.update(
+#             title='Stock price evolution',
+#             showlegend=False,
+#             template='simple_white',
+#             title_x=0.5,
+#             xaxis_showgrid=False,
+#             yaxis_showgrid=False
+#         ),
+
+#         # Add labels to subplots
+#         fig['layout']['yaxis']['title'] = 'Price'
+#         fig['layout']['yaxis2']['title'] = 'Volume'
+#         # fig.show(config={"displayModeBar": False})
+#         return dcc.Graph(id='linegraph-container-enx', figure=fig, config={'displayModeBar': False})
+#     else:
+#         return '', ''
 
 
 #########################################################################################################
